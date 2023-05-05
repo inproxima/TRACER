@@ -53,32 +53,43 @@ def read_docx(directory_path: str) -> None:
                     f.write(text + '\n')
 
 
-def read_txt(directory_path: str) -> str:
-    output = []
+def read_txt(directory_path: str) -> None:
+    root_dir = os.path.dirname(os.path.abspath(directory_path))
+
+    text_dir = os.path.join(root_dir, 'texts')
+    os.makedirs(text_dir, exist_ok=True)
 
     for filename in os.listdir(directory_path):
         if filename.endswith('.txt'):
             filepath = os.path.join(directory_path, filename)
-            with open(filepath, 'r', encoding='utf-8') as f:
-                text = f.read()
+            
+            output_file = os.path.join(text_dir, f"{os.path.splitext(filename)[0]}_processed.txt")
+            with open(filepath, 'r', encoding='utf-8') as f_in, open(output_file, 'w', encoding='utf-8') as f_out:
+                text = f_in.read()
                 # Merge hyphenated words
                 text = re.sub(r"(\w+)-\n(\w+)", r"\1\2", text)
                 # Fix newlines in the middle of sentences
                 text = re.sub(r"(?<!\n\s)\n(?!\s\n)", " ", text.strip())
                 # Remove multiple newlines
                 text = re.sub(r"\n\s*\n", "\n\n", text)
-                output.append(text)
-    return output
+                f_out.write(text)
+
 
 #Golden Function for pdf
-def read_pdf(directory_path: str) -> str:
-    output = []
-    
+def read_pdf(directory_path: str) -> None:
+    # Get the root directory of the given directory_path
+    root_dir = os.path.dirname(os.path.abspath(directory_path))
+
+    text_dir = os.path.join(root_dir, 'texts')
+    os.makedirs(text_dir, exist_ok=True)
+
     for filename in os.listdir(directory_path):
         if filename.endswith('.pdf'):
             filepath = os.path.join(directory_path, filename)
-            with open(filepath, 'rb') as f:
-                reader = PdfReader(f)
+            
+            output_file = os.path.join(text_dir, f"{os.path.splitext(filename)[0]}.txt")
+            with open(filepath, 'rb') as pdf_file, open(output_file, 'w', encoding='utf-8') as text_file:
+                reader = PdfReader(pdf_file)
                 for page in reader.pages:
                     text = page.extract_text()
                     # Merge hyphenated words
@@ -87,8 +98,7 @@ def read_pdf(directory_path: str) -> str:
                     text = re.sub(r"(?<!\n\s)\n(?!\s\n)", " ", text.strip())
                     # Remove multiple newlines
                     text = re.sub(r"\n\s*\n", "\n\n", text)
-                    output.append(text)
-    return output
+                    text_file.write(text + '\n')
 
 def save_output_to_file(theme_dir: str, original_filename: str, output_theme: str) -> None:
     theme_filename = f"{os.path.splitext(original_filename)[0]}_theme.txt"
@@ -259,81 +269,95 @@ def save_output_with_timestamp(content):
     print(f"Output content has been saved in '{output_dir}/{output_filename}'.")
 
 
-# Load .env file
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY") 
-api = openai.api_key
+if __name__ == '__main__':
 
-tempDir = "tempDir"
-content_folder = "content_analysis"
-theme_folder = "theme_analysis"
-json_files = "json_files"
-texts = "texts"
-theme_analysis = "theme_analysis"
-            
-for docx_files in os.listdir(tempDir):
-    filepath = os.path.join(tempDir, docx_files)
-    mime_type, _ = mimetypes.guess_type(filepath)
-    #mime_type = filetype.guess(filepath)
-    file_extension = os.path.splitext(tempDir)[1]
+    # Load .env file
+    load_dotenv()
+    openai.api_key = os.getenv("OPENAI_API_KEY") 
+    api = openai.api_key
 
-if mime_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-    raw_text = read_docx(tempDir)
-    embeddings = construct_index(texts, api)
-    user_input = "What are four main themes?"
-    response_theme = theme(user_input)
-    output_theme = str(response_theme)
+    tempDir = "tempDir"
+    content_folder = "content_analysis"
+    theme_folder = "theme_analysis"
+    json_files = "json_files"
+    texts = "texts"
+    theme_analysis = "theme_analysis"
+                
+    for docx_files in os.listdir(tempDir):
+        filepath = os.path.join(tempDir, docx_files)
+        mime_type, _ = mimetypes.guess_type(filepath)
+        #mime_type = filetype.guess(filepath)
+        file_extension = os.path.splitext(tempDir)[1]
 
-    if not os.path.exists(theme_folder):
-        os.makedirs(theme_folder)
+    if mime_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        raw_text = read_docx(tempDir)
+        embeddings = construct_index(texts, api)
+        user_input = "What are four main themes?"
+        response_theme = theme(user_input)
+        output_theme = str(response_theme)
 
-    for filename in os.listdir(tempDir):
-        original_filepath = os.path.join(tempDir, filename)
+        if not os.path.exists(theme_folder):
+            os.makedirs(theme_folder)
+
+        for filename in os.listdir(tempDir):
+            original_filepath = os.path.join(tempDir, filename)
+        
+    elif mime_type == "text/plain":
+        raw_text = read_txt(tempDir)
+        embeddings = construct_index(texts, api)
+        user_input = "What are four main themes?"
+        response_theme = theme(user_input)
+        output_theme = str(response_theme)
+
+        if not os.path.exists(theme_folder):
+            os.makedirs(theme_folder)
+
+        for filename in os.listdir(tempDir):
+            original_filepath = os.path.join(tempDir, filename)
+        
+    elif file_extension.lower() == ".pdf" or mime_type == "application/pdf":
+        raw_text = read_pdf(tempDir)
+        embeddings = construct_index(texts, api)
+        user_input = "What are four main themes?"
+        response_theme = theme(user_input)
+        output_theme = str(response_theme)
+
+        if not os.path.exists(theme_folder):
+            os.makedirs(theme_folder)
+
+        for filename in os.listdir(tempDir):
+            original_filepath = os.path.join(tempDir, filename)
+
+        
+    else:
+        print(f"Skipping file {filepath} with MIME type {mime_type}")
+
     
-elif mime_type == "text/plain":
-    raw_text = read_txt(tempDir)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_text(raw_text)
-    embeddings = construct_index(tempDir, api)
-    #index = GPTSimpleVectorIndex.load_from_disk('index.json')
-    
-elif file_extension.lower() == ".pdf" or mime_type == "application/pdf":
-    raw_text = read_pdf(tempDir)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_text(raw_text)
-    embeddings = construct_index(tempDir, api)
-    #index = GPTSimpleVectorIndex.load_from_disk('index.json')
+    combine_text_files()
+    with open("themes.txt") as f:
+        themes = f.read()
 
-    
-else:
-    print(f"Skipping file {filepath} with MIME type {mime_type}")
 
-with open("themes.txt") as f:
-    themes = f.read()
+    template = """
+    You are given content containing a list of themes gathered from multiple transcripts. Your task is to analyze these themes and identify the four most frequent and central aspects related to teaching, materials, and assessment. Please consider the following instructions:
 
-combine_text_files()
+    1. Recognize semantically similar themes, even if they have different wording, and group them together.
+    2. Focus on the common threads connecting various ideas within the context of teaching and assessment.
+    3. Rank the themes based on their frequency, and present the top 4 most common themes.
+    4. For each of the top 4 themes, provide a brief explanation on how it relates to teaching and assessment.
 
-template = """
-You are given content containing a list of themes gathered from multiple transcripts. Your task is to analyze these themes and identify the four most frequent and central aspects related to teaching, materials, and assessment. Please consider the following instructions:
+    Here is the content:
 
-1. Recognize semantically similar themes, even if they have different wording, and group them together.
-2. Focus on the common threads connecting various ideas within the context of teaching and assessment.
-3. Rank the themes based on their frequency, and present the top 4 most common themes.
-4. For each of the top 4 themes, provide a brief explanation on how it relates to teaching and assessment.
+    {themes}
 
-Here is the content:
+    Analyze the themes, and provide your insights on the most frequent and central aspects related to teaching and assessment.
 
-{themes}
-
-Analyze the themes, and provide your insights on the most frequent and central aspects related to teaching and assessment.
-
-"""
-
-prompt = PromptTemplate.from_template(template)
-
-chain = LLMChain(llm=ChatOpenAI(), prompt=prompt)
-output_content = chain.run(themes)
-save_output_with_timestamp(output_content)
-print(output_content)
-clear_files(json_files)
-clear_files(theme_analysis)
+    """
+    prompt = PromptTemplate.from_template(template)
+    chain = LLMChain(llm=ChatOpenAI(), prompt=prompt)
+    output_content = chain.run(themes)
+    save_output_with_timestamp(output_content)
+    print(output_content)
+    # Clear files if you are conducting multiple excutions
+    #clear_files(json_files)
+    #clear_files(theme_analysis)
