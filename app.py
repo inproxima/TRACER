@@ -4,7 +4,6 @@ from docx import Document as DocxDocument
 from pypdf import PdfReader
 
 
-
 #Python libraries
 import re
 import os
@@ -12,7 +11,6 @@ import mimetypes
 from dotenv import load_dotenv
 import json
 import datetime
-
 
 #langchain libraries
 from langchain.chat_models import ChatOpenAI
@@ -22,12 +20,11 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 
-
 #Llama libraries
 from llama_index import SimpleDirectoryReader, GPTSimpleVectorIndex, LLMPredictor, PromptHelper, QuestionAnswerPrompt, ServiceContext
 
-
-#Save the file in directory
+#Functions
+#Docx to text
 def read_docx(directory_path: str) -> None:
     # Get the root directory of the given directory_path
     root_dir = os.path.dirname(os.path.abspath(directory_path))
@@ -75,7 +72,7 @@ def read_txt(directory_path: str) -> None:
                 f_out.write(text)
 
 
-#Golden Function for pdf
+#PDF to Text
 def read_pdf(directory_path: str) -> None:
     # Get the root directory of the given directory_path
     root_dir = os.path.dirname(os.path.abspath(directory_path))
@@ -159,7 +156,7 @@ def combine_text_files():
     with open(output_file, 'w', encoding='utf-8') as output:
         output.write(combined_text)
 
-
+#Make JSON
 def construct_index(directory_path, api):
     openai.api_key = api
     # set maximum input size
@@ -220,6 +217,7 @@ def construct_index_content(directory_path, api):
 
     index.save_to_disk('index.json')
 
+#Extract themes
 def theme(query_str):
     QA_PROMPT_TMPL = (
     "You are a thematic analysis bot. Please conduct a thematic analysis on the following {context_str} which are transcripts between a researcher and a teacher about a new model of teaching mathematics. Your task is to analyze the conversation and identify themes which are patterns or recurring concepts that emerges that emerge from the conversation. Please read through the transcript thoroughly, extract the themes related to teaching mathematics and assessment. Present your findings in a clear but detailed manner. Additionally, provide a brief summary of each theme to give context on how it relates to the theme. Given this information, please answer the question: {query_str}\n"
@@ -276,19 +274,22 @@ if __name__ == '__main__':
     openai.api_key = os.getenv("OPENAI_API_KEY") 
     api = openai.api_key
 
+    #Directory
     tempDir = "tempDir"
-    content_folder = "content_analysis"
     theme_folder = "theme_analysis"
     json_files = "json_files"
     texts = "texts"
     theme_analysis = "theme_analysis"
-                
+
+
+    #identify file type            
     for docx_files in os.listdir(tempDir):
         filepath = os.path.join(tempDir, docx_files)
         mime_type, _ = mimetypes.guess_type(filepath)
         #mime_type = filetype.guess(filepath)
         file_extension = os.path.splitext(tempDir)[1]
 
+    # output themes
     if mime_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         raw_text = read_docx(tempDir)
         embeddings = construct_index(texts, api)
@@ -337,7 +338,7 @@ if __name__ == '__main__':
     with open("themes.txt") as f:
         themes = f.read()
 
-
+    #Langchain prompt
     template = """
     You are given content containing a list of themes gathered from multiple transcripts. Your task is to analyze these themes and identify the four most frequent and central aspects related to teaching, materials, and assessment. Please consider the following instructions:
 
@@ -353,6 +354,7 @@ if __name__ == '__main__':
     Analyze the themes, and provide your insights on the most frequent and central aspects related to teaching and assessment.
 
     """
+    
     prompt = PromptTemplate.from_template(template)
     chain = LLMChain(llm=ChatOpenAI(), prompt=prompt)
     output_content = chain.run(themes)
