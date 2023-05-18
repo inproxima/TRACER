@@ -297,6 +297,13 @@ st.sidebar.markdown(
 """
 )
 
+st.sidebar.subheader('Notes')
+st.sidebar.markdown(
+    """
+- TRACER does not save or copy any content uploaded or generated. 
+"""
+)
+
 st.title("Hi, I'm TRACER 👋")
 st.subheader("Transcript Analysis and Concept Extraction Resource")
 st.markdown("""___""")
