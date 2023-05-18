@@ -270,6 +270,8 @@ def display_and_download_files(folder_path: str):
         st.download_button(
             f"Download {file.name}", file.read_text(), f"{file.name}"
         )
+#Requirements
+create_temp_dir()
 
 #stramlit components
 st.set_page_config(page_title="TRACER, Transcript Analysis and Concept Extraction Resource!", page_icon="🤖", initial_sidebar_state="expanded")
