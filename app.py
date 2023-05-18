@@ -361,5 +361,10 @@ if __name__ == '__main__':
     save_output_with_timestamp(output_content)
     print(output_content)
     # Clear files if you are conducting multiple excutions
-    #clear_files(json_files)
-    #clear_files(theme_analysis)
+    clear_files(json_files)
+    clear_files(theme_analysis)
+    clear_files(texts)
+    clear_files(tempDir)
+    file_path_theme = "themes.txt"
+    if os.path.exists(file_path_theme):
+        os.remove(file_path_theme)
