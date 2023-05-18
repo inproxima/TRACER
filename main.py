@@ -21,7 +21,7 @@ from langchain import PromptTemplate
 from langchain.chains import LLMChain
 
 #Llama libraries
-from llama_index import SimpleDirectoryReader, GPTSimpleVectorIndex, LLMPredictor, PromptHelper, ServiceContext
+from llama_index import GPTSimpleVectorIndex, LLMPredictor, PromptHelper, ServiceContext
 
 #Functions
 #Docx to text
