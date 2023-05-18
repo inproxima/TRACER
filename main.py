@@ -21,7 +21,7 @@ from langchain import PromptTemplate
 from langchain.chains import LLMChain
 
 #Llama libraries
-from llama_index import GPTSimpleVectorIndex, LLMPredictor, PromptHelper, ServiceContext
+from llama_index import SimpleDirectoryReader, GPTVectorStoreIndex, LLMPredictor, PromptHelper, ServiceContext
 
 #Functions
 #Docx to text
@@ -193,7 +193,7 @@ def construct_index(directory_path, api):
     service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor, prompt_helper=prompt_helper)
 
     for idx, doc in enumerate(documents):
-        index = GPTSimpleVectorIndex.from_documents(
+        index = GPTVectorStoreIndex.from_documents(
             [doc], service_context=service_context
         )
         # save the index as a json file using the index of the document in the list
@@ -227,7 +227,7 @@ def theme(number, interviewee, topic, focus):
             json_file = os.path.join(json_folder, filename)
 
             # Load the index from the JSON file
-            index = GPTSimpleVectorIndex.load_from_disk(json_file)
+            index = GPTVectorStoreIndex.load_from_disk(json_file)
 
             # Query the index and store the response
             response = index.query(template, response_mode="default", mode="embedding")
