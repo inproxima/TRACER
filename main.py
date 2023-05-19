@@ -166,7 +166,6 @@ def combine_text_files():
 
 #Make JSON
 def construct_index(directory_path, api):
-    openai.api_key = api
     # set maximum input size
     max_input_size = 4096
     # set number of output tokens
@@ -202,7 +201,8 @@ def construct_index(directory_path, api):
 
 
 #Extract themes
-def theme(number, interviewee, topic, focus):
+def theme(number, interviewee, topic, focus, api):
+    os.environ["OPENAI_API_KEY"] = api
     template = (
     "You are a thematic analysis bot. Please conduct a thematic analysis on the following {context_str} which are transcripts between a researcher and a {interviewee} about {topic}. Your task is to analyze the conversation and identify themes which are patterns or recurring concepts that emerges that emerge from the conversation. Please read through the transcript thoroughly, extract the {number} themes related to {focus}. Present your findings in a clear but detailed manner. Additionally, provide a brief summary of each theme to give context on how it relates to the theme."
     )
@@ -378,7 +378,7 @@ if number and interviewee and topic and focus is not None:
                 raw_text = read_docx(tempDir)
                 embeddings = construct_index(texts, api)
                 #user_input = f"What are {number} main themes?"
-                response_theme = theme(number, interviewee, topic, focus)
+                response_theme = theme(number, interviewee, topic, focus, api)
                 output_theme = str(response_theme)
 
                 if not os.path.exists(theme_folder):
@@ -391,7 +391,7 @@ if number and interviewee and topic and focus is not None:
                 raw_text = read_txt(tempDir)
                 embeddings = construct_index(texts, api)
                 #user_input = f"What are {number} main themes?"
-                response_theme = theme(number, interviewee, topic, focus)
+                response_theme = theme(number, interviewee, topic, focus, api)
                 output_theme = str(response_theme)
 
                 if not os.path.exists(theme_folder):
@@ -404,7 +404,7 @@ if number and interviewee and topic and focus is not None:
                 raw_text = read_pdf(tempDir)
                 embeddings = construct_index(texts, api)
                 #user_input = f"What are {number} main themes?"
-                response_theme = theme(number, interviewee, topic, focus)
+                response_theme = theme(number, interviewee, topic, focus, api)
                 output_theme = str(response_theme)
 
                 if not os.path.exists(theme_folder):
