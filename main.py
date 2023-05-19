@@ -103,7 +103,7 @@ def save_uploaded_file(uploadedfile):
     for file in uploadedfile:
         with open(os.path.join("tempDir", file.name), "wb") as f:
             f.write(file.getbuffer())
-        st.success("Saved {} : To tempDir".format(file.name))
+        st.success("Cached {}".format(file.name))
 
 def save_output_to_file(theme_dir: str, original_filename: str, output_theme: str) -> None:
     theme_filename = f"{os.path.splitext(original_filename)[0]}_theme.txt"
@@ -350,7 +350,7 @@ docx_files = st.file_uploader("Upload Document", type=["pdf","docx","txt"], acce
 st.markdown("""---""") 
 st.subheader("3. Please enter the required information.")
 number = st.number_input("How many themes would you like tracer to find?", step=1)
-interviewee = st.text_input("Who is the researcher interviewing?")
+interviewee = st.text_input("Who is the researcher interviewing in the transcripts?")
 topic = st.text_input("What are the context of the interview about?", placeholder = "e.g., 'a new model of teaching mathematics")
 focus = st.text_input("What would you like TRACER to focus on?", placeholder = "e.g., 'teaching mathematics and assessment")
 
@@ -365,6 +365,7 @@ theme_analysis = "theme_analysis"
 if number and interviewee and topic and focus is not None:
     if st.button("Get Themes!"):
         save_uploaded_file(docx_files)
+        st.warning("Please note that the process of identifying themes will take several minutes.")
         with st.spinner(text="Processing uploaded files..."):
             #identify file type          
             for docx_files in os.listdir(tempDir):
