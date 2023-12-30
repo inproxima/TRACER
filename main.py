@@ -334,7 +334,7 @@ if st.button("Check key"):
         try:
             # Send a test request to the OpenAI API
             response = openai.Completion.create(
-                engine="text-davinci-003",
+                model="gpt-3.5-turbo-instruct",
                 prompt="What is the capital of France?",
                 temperature=0.5
             )
