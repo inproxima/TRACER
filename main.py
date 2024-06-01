@@ -327,6 +327,7 @@ set_key(env_path, "OPENAI_API_KEY", api)
 
 openai.api_key = api
 
+
 if st.button("Check key"):
     if api is not None:
     #Delete any files in tempDir
@@ -334,9 +335,9 @@ if st.button("Check key"):
         try:
             # Send a test request to the OpenAI API
             response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt="What is the capital of France?",
-                temperature=0.5
+            model="gpt-3.5-turbo-instruct",
+            prompt="what is the capital of paris",
+            max_tokens=10,
             )
             st.markdown("""---""")
             st.success("API key is valid!")
