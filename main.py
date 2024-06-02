@@ -176,7 +176,7 @@ def construct_index(directory_path, api):
     chunk_size_limit = 600
 
     # define LLM
-    llm_predictor = LLMPredictor(llm=ChatOpenAI(temperature=0.0, model_name="gpt-3.5-turbo", max_tokens=num_outputs, openai_api_key=api))
+    llm_predictor = LLMPredictor(llm=ChatOpenAI(temperature=0.0, model_name="gpt-4o", max_tokens=num_outputs, openai_api_key=api))
     prompt_helper = PromptHelper(max_input_size, num_outputs, max_chunk_overlap, chunk_size_limit=chunk_size_limit)
 
     # Get the root directory of the given directory_path
@@ -230,7 +230,7 @@ def theme(number, interviewee, topic, focus, api):
             index = GPTSimpleVectorIndex.load_from_disk(json_file)
 
             # Query the index and store the response
-            response = index.query(template, response_mode="default", mode="embedding")
+            response = index.query(template, response_mode="default", mode="embedding", model="gpt-3.5-turbo-instruct")
 
             # Save the response to a file in the theme_analysis folder with the same name as the JSON file
             analysis_file = os.path.join(theme_analysis_folder, f"{os.path.splitext(filename)[0]}_analysis.txt")
